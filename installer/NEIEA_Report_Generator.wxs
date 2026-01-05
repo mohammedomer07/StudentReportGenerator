@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <Package
+    Name="NEIEA Report Generator"
+    Manufacturer="Mohammed Omer for NEIEA"
+    Version="1.0.0"
+    UpgradeCode="cd754440-97a4-4249-b6b3-2b92b1783564"
+    InstallerVersion="500"
+    Compressed="yes">
+
+    <!-- ===============================
+         INSTALL DIRECTORY
+         =============================== -->
+    <StandardDirectory Id="ProgramFilesFolder">
+      <Directory Id="INSTALLFOLDER" Name="NEIEA Report Generator">
+        <Component Id="MainExeComponent" Guid="*">
+          <File
+            Id="MainExe"
+            Source="bin\NEIEA_ReportGen.exe"
+            KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+
+    <!-- ===============================
+         START MENU SHORTCUT
+         =============================== -->
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppMenuDir" Name="NEIEA Report Generator">
+        <Component Id="StartMenuComponent" Guid="*">
+          <Shortcut
+            Id="StartMenuShortcut"
+            Name="NEIEA Report Generator"
+            Target="[INSTALLFOLDER]NEIEA_ReportGen.exe"
+            WorkingDirectory="INSTALLFOLDER" />
+          <RemoveFolder Id="AppMenuDir" On="uninstall" />
+          <RegistryValue
+            Root="HKCU"
+            Key="Software\NEIEA\ReportGenerator"
+            Name="StartMenuShortcut"
+            Type="integer"
+            Value="1"
+            KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+
+    <!-- ===============================
+         DESKTOP SHORTCUT
+         =============================== -->
+    <StandardDirectory Id="DesktopFolder">
+      <Component Id="DesktopShortcutComponent" Guid="*">
+        <Shortcut
+          Id="DesktopShortcut"
+          Name="NEIEA Report Generator"
+          Target="[INSTALLFOLDER]NEIEA_ReportGen.exe"
+          WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue
+          Root="HKCU"
+          Key="Software\NEIEA\ReportGenerator"
+          Name="DesktopShortcut"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
+    <!-- ===============================
+         FEATURE (INSTALL EVERYTHING)
+         =============================== -->
+    <Feature Id="MainFeature" Level="1">
+      <ComponentRef Id="MainExeComponent" />
+      <ComponentRef Id="StartMenuComponent" />
+      <ComponentRef Id="DesktopShortcutComponent" />
+    </Feature>
+
+  </Package>
+
+</Wix>

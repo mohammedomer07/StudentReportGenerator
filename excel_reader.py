@@ -1,55 +1,67 @@
 import pandas as pd
+import math
 
 
-def clean(val):
-    if pd.isna(val):
+def clean_number(value):
+    """
+    - Converts 1.0 → 1
+    - Keeps 0 as 0
+    - Converts NaN → ""
+    """
+    if pd.isna(value):
         return ""
-    return str(val).strip()
+    if isinstance(value, float):
+        if value.is_integer():
+            return int(value)
+    return value
 
 
-def read_students_excel(file_path):
-    df = pd.read_excel(file_path)
+def clean_mark(value):
+    """
+    - 'Ab' / 'AB' → 'ABSENT'
+    - NaN → ''
+    - 0 stays 0
+    - Numbers stay numbers
+    """
+    if pd.isna(value):
+        return ""
+    if isinstance(value, str) and value.strip().lower() == "ab":
+        return "ABSENT"
+    if isinstance(value, float):
+        if value.is_integer():
+            return int(value)
+    return value
+
+
+def read_students_excel(excel_path):
+    df = pd.read_excel(excel_path)
+
     students = []
 
     for _, row in df.iterrows():
-        english = int(row.get("English", 0) or 0)
-        math = int(row.get("Math", 0) or 0)
-        science = int(row.get("Science", 0) or 0)
-
-        total_marks = english + math + science
-        percentage = round((total_marks / 75) * 100, 2)
-
-        total_classes = int(row.get("Total Classes", 0) or 0)
-        classes_attended = int(row.get("Classes Attended", 0) or 0)
-
-        attendance_percentage = ""
-        if total_classes > 0:
-            attendance_percentage = round(
-                (classes_attended / total_classes) * 100, 2
-            )
-
         student = {
-            "student_name": clean(row.get("Student's Name")),
-            "father_name": clean(row.get("Father's Name")),
-            "mother_name": clean(row.get("Mother's Name")),
-            "gender": clean(row.get("Gender")),
-            "age": clean(row.get("Age")),
-            "standard": clean(row.get("Standard")),
-            "roll_no": clean(row.get("Roll No")),
-            "address": clean(row.get("Address")),
-            "year": clean(row.get("Year")),
-            "contact_number": clean(row.get("Contact Number")),
+            # ===== BASIC DETAILS =====
+            "student_name": str(row.get("Student's Name", "")).strip(),
+            "father_name": str(row.get("Father's Name", "")).strip(),
+            "mother_name": str(row.get("Mother's Name", "")).strip(),
+            "gender": str(row.get("Gender", "")).strip(),
+            "age": clean_number(row.get("Age", "")),
+            "standard": str(row.get("Standard", "")).strip(),
+            "roll_no": clean_number(row.get("Roll No", "")),
+            "address": str(row.get("Address", "")).strip(),
+            "year": clean_number(row.get("Year", "")),
 
-            "english": english,
-            "math": math,
-            "science": science,
+            # ✅ FIXED CONTACT HEADER
+            "contact_number": clean_number(row.get("Contact Number", "")),
 
-            "total_marks": total_marks,
-            "percentage": percentage,
+            # ===== MARKS =====
+            "english": clean_mark(row.get("English", "")),
+            "math": clean_mark(row.get("Math", "")),
+            "science": clean_mark(row.get("Science", "")),
 
-            "total_classes": total_classes,
-            "classes_attended": classes_attended,
-            "attendance_percentage": attendance_percentage,
+            # ===== ATTENDANCE =====
+            "total_classes": clean_number(row.get("Total Classes", 0)),
+            "classes_attended": clean_number(row.get("Classes Attended", 0)),
         }
 
         students.append(student)

@@ -1,202 +1,137 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 from report_engine import generate_reports_from_excel
-import os
-import webbrowser
+import os, threading, time, webbrowser
 
 
 class ReportCardApp:
-
     def __init__(self, root):
         self.root = root
-        self.root.title("Omer Report Generator")
-        self.root.geometry("500x420")
+        self.root.title("NEIEA Report Generator")
+        self.root.geometry("520x460")
         self.root.resizable(False, False)
 
         self.excel_path = ""
-
-        # ===== TITLE =====
-        title = tk.Label(
-            root,
-            text="Student Report Card Generator",
-            font=("Arial", 16, "bold")
-        )
-        title.pack(pady=15)
-
-        # ===== EXCEL FILE LABEL =====
-        self.file_label = tk.Label(
-            root,
-            text="No Excel file selected",
-            fg="gray"
-        )
-        self.file_label.pack(pady=8)
-
-        # ===== SELECT FILE BUTTON =====
-        select_btn = tk.Button(
-            root,
-            text="Select Excel File",
-            width=25,
-            command=self.select_file
-        )
-        select_btn.pack(pady=5)
-
-        # ===== REPORT TITLE INPUT =====
-        title_label = tk.Label(
-            root,
-            text="Report Title (e.g. JULY RESULT REPORT)"
-        )
-        title_label.pack(pady=(10, 0))
-
-        self.report_title_entry = tk.Entry(root, width=40)
-        self.report_title_entry.pack(pady=5)
-
-        # ===== EXPORT OPTION =====
         self.export_format = tk.StringVar(value="DOCX")
 
-        export_frame = tk.Frame(root)
-        export_frame.pack(pady=10)
+        tk.Label(root, text="Student Report Card Generator",
+                 font=("Arial", 16, "bold")).pack(pady=15)
 
-        tk.Radiobutton(
-            export_frame,
-            text="Export as DOCX",
-            variable=self.export_format,
-            value="DOCX"
-        ).pack(side="left", padx=15)
+        self.file_label = tk.Label(root, text="No Excel file selected", fg="gray")
+        self.file_label.pack(pady=5)
 
-        tk.Radiobutton(
-            export_frame,
-            text="Export as PDF",
-            variable=self.export_format,
-            value="PDF"
-        ).pack(side="left", padx=15)
+        tk.Button(root, text="Select Excel File", width=25,
+                  command=self.select_file).pack(pady=5)
 
-        # ===== GENERATE BUTTON =====
-        generate_btn = tk.Button(
-            root,
-            text="Generate Report Cards",
-            width=25,
-            bg="#4CAF50",
-            fg="white",
-            command=self.generate_reports
-        )
-        generate_btn.pack(pady=20)
+        tk.Label(root, text="Report Title (e.g. JULY RESULT REPORT)").pack()
+        self.report_title_entry = tk.Entry(root, width=42)
+        self.report_title_entry.pack(pady=5)
 
-        # ===== STATUS LABEL =====
-        self.status_label = tk.Label(
-            root,
-            text="Waiting for action...",
-            fg="blue"
-        )
-        self.status_label.pack(pady=5)
+        frame = tk.Frame(root)
+        frame.pack(pady=10)
 
-        # ===== WATERMARK =====
-        credit = tk.Label(
-            root,
-            text="By Mohammed Omer for NEIEA",
-            fg="blue",
-            cursor="hand2",
-            font=("Arial", 9, "underline")
-        )
+        tk.Radiobutton(frame, text="Export as DOCX (Template)",
+                       variable=self.export_format, value="DOCX").pack(anchor="w")
+
+        tk.Radiobutton(frame, text="Export as PDF (No Template / Design)",
+                       variable=self.export_format, value="PDF").pack(anchor="w")
+
+        tk.Radiobutton(frame, text="Export as PDF (From DOCX – Requires Microsoft Word)",
+                       variable=self.export_format, value="DOCX2PDF").pack(anchor="w")
+
+        tk.Button(root, text="Generate Report Cards",
+                  bg="#4CAF50", fg="white", width=25,
+                  command=self.generate).pack(pady=20)
+
+        self.status = tk.Label(root, text="Waiting for action...", fg="blue")
+        self.status.pack()
+
+        credit = tk.Label(root, text="By Mohammed Omer for NEIEA",
+                          fg="blue", cursor="hand2",
+                          font=("Arial", 9, "underline"))
         credit.pack(side="bottom", anchor="e", padx=10, pady=5)
+        credit.bind("<Button-1>",
+                    lambda e: webbrowser.open("https://instagram.com/_mromer_/"))
 
-        credit.bind(
-            "<Button-1>",
-            lambda e: webbrowser.open("https://instagram.com/_mromer_/")
-        )
-
-    # ===== FILE SELECT =====
     def select_file(self):
-        file_path = filedialog.askopenfilename(
-            title="Select Excel File",
-            filetypes=[("Excel Files", "*.xlsx")]
-        )
+        path = filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx")])
+        if path:
+            self.excel_path = path
+            self.file_label.config(text=os.path.basename(path), fg="black")
 
-        if file_path:
-            self.excel_path = file_path
-            self.file_label.config(text=os.path.basename(file_path), fg="black")
-            self.status_label.config(text="Excel file selected.")
+    def show_progress(self, total):
+        self.popup = tk.Toplevel(self.root)
+        self.popup.title("Processing")
+        self.popup.geometry("420x180")
+        self.popup.transient(self.root)
+        self.popup.grab_set()
 
-    # ===== SUCCESS DIALOG WITH VIEW NOW =====
-    def show_success_dialog(self, message):
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Success")
-        dialog.geometry("380x160")
-        dialog.resizable(False, False)
-        dialog.transient(self.root)
-        dialog.grab_set()
+        self.bar = ttk.Progressbar(self.popup, maximum=total, length=350)
+        self.bar.pack(pady=20)
 
-        label = tk.Label(
-            dialog,
-            text=message,
-            wraplength=340,
-            justify="center"
-        )
-        label.pack(pady=25)
+        self.msg = tk.Label(self.popup, text="Contacting NASA 🚀")
+        self.msg.pack()
 
-        btn_frame = tk.Frame(dialog)
-        btn_frame.pack(pady=10)
+        self.messages = [
+            "Contacting NASA 🚀",
+            "Waking Einstein 🧠",
+            "Borrowing Tesla power ⚡",
+            "Convincing Microsoft Word 😤",
+            "Almost done 😌"
+        ]
 
-        view_btn = tk.Button(
-            btn_frame,
-            text="View Now",
-            width=12,
-            command=lambda: self.open_output_folder(dialog)
-        )
-        view_btn.pack(side="left", padx=10)
+    def update_progress(self, i):
+        self.bar["value"] = i
+        self.msg.config(text=self.messages[i % len(self.messages)])
 
-        ok_btn = tk.Button(
-            btn_frame,
-            text="OK",
-            width=12,
-            command=dialog.destroy
-        )
-        ok_btn.pack(side="left", padx=10)
+    def close_progress(self):
+        self.popup.destroy()
 
-    def open_output_folder(self, dialog=None):
-        output_path = os.path.abspath("output")
-        os.startfile(output_path)
-        if dialog:
-            dialog.destroy()
-
-    # ===== GENERATE REPORTS =====
-    def generate_reports(self):
+    def generate(self):
         if not self.excel_path:
-            messagebox.showerror("Error", "Please select an Excel file first.")
+            messagebox.showerror("Error", "Select Excel file first.")
             return
 
-        report_title = self.report_title_entry.get().strip()
-        if not report_title:
-            report_title = "STUDENT REPORT CARD"
+        title = self.report_title_entry.get().strip() or "STUDENT REPORT CARD"
+        mode = self.export_format.get()
 
-        export_format = self.export_format.get()
+        if mode == "DOCX2PDF":
+            if not messagebox.askyesno(
+                "Microsoft Word Required",
+                "This option requires Microsoft Word.\n\nProceed?"
+            ):
+                return
 
-        try:
-            self.status_label.config(text="Generating report cards...")
-            self.root.update_idletasks()
+        def task():
+            try:
+                files = generate_reports_from_excel(
+                    self.excel_path, title, mode
+                )
 
-            count = generate_reports_from_excel(
-                self.excel_path,
-                report_title,
-                export_format
-            )
+                self.root.after(0, self.show_progress, len(files))
 
-            if count == 0:
-                raise Exception("No valid student records found in the Excel file.")
+                for i in range(len(files)):
+                    time.sleep(0.4)
+                    self.root.after(0, self.update_progress, i + 1)
 
-            self.status_label.config(
-                text=f"{count} report card(s) generated successfully!"
-            )
+                self.root.after(0, self.close_progress)
 
-            self.show_success_dialog(
-                f"{count} report card(s) generated as {export_format}.\nCheck the output folder."
-            )
+                def done():
+                    if messagebox.askyesno(
+                        "Success",
+                        f"{len(files)} report(s) generated.\n\nOpen output folder?"
+                    ):
+                        os.startfile(os.path.abspath("output"))
 
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
-            self.status_label.config(text="Error occurred.")
+                self.root.after(0, done)
+
+            except Exception as e:
+                self.root.after(0, lambda: messagebox.showerror("Error", str(e)))
+
+        threading.Thread(target=task, daemon=True).start()
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = ReportCardApp(root)
+    ReportCardApp(root)
     root.mainloop()

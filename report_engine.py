@@ -2,39 +2,45 @@ import os
 from excel_reader import read_students_excel
 from docx_generator import generate_student_docx
 from pdf_generator import generate_student_report
+from docx2pdf import convert
 
 
 def generate_reports_from_excel(excel_path, report_title, export_format):
     students = read_students_excel(excel_path)
-
     if not students:
-        return 0
+        return []
 
-    base_output = "output"
-    docx_output = os.path.join(base_output, "DOCX")
-    pdf_output = os.path.join(base_output, "PDF")
+    base = "output"
+    docx_dir = os.path.join(base, "DOCX")
+    pdf_dir = os.path.join(base, "PDF")
+    docx2pdf_dir = os.path.join(base, "DOCX2PDF")
 
-    # Create folders safely
-    os.makedirs(docx_output, exist_ok=True)
-    os.makedirs(pdf_output, exist_ok=True)
+    os.makedirs(docx_dir, exist_ok=True)
+    os.makedirs(pdf_dir, exist_ok=True)
+    os.makedirs(docx2pdf_dir, exist_ok=True)
 
-    count = 0
+    generated = []
 
     for student in students:
+
+        # 1️⃣ DOCX (Template)
         if export_format == "DOCX":
-            generate_student_docx(
-                student,
-                report_title,
-                output_folder=docx_output
-            )
+            path = generate_student_docx(student, report_title, docx_dir)
+            generated.append(path)
 
+        # 2️⃣ PDF (No Template – reportlab)
         elif export_format == "PDF":
-            generate_student_report(
-                student,
-                report_title,
-                output_folder=pdf_output
+            path = generate_student_report(student, report_title, pdf_dir)
+            generated.append(path)
+
+        # 3️⃣ DOCX ➜ PDF (Template + Word required)
+        elif export_format == "DOCX2PDF":
+            docx_path = generate_student_docx(student, report_title, docx2pdf_dir)
+            pdf_path = os.path.join(
+                pdf_dir,
+                os.path.basename(docx_path).replace(".docx", ".pdf")
             )
+            convert(docx_path, pdf_path)
+            generated.append(pdf_path)
 
-        count += 1
-
-    return count
+    return generated

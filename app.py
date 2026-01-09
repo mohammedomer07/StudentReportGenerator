@@ -3,7 +3,6 @@ from tkinter import filedialog, messagebox, ttk
 from report_engine import generate_reports_from_excel
 import os, threading, time, webbrowser
 
-
 class ReportCardApp:
     def __init__(self, root):
         self.root = root
@@ -14,7 +13,7 @@ class ReportCardApp:
         self.excel_path = ""
         self.export_format = tk.StringVar(value="DOCX")
 
-        tk.Label(root, text="Student Report Card Generator",
+        tk.Label(root, text="NEIEA Student Report Card Generator",
                  font=("Arial", 16, "bold")).pack(pady=15)
 
         self.file_label = tk.Label(root, text="No Excel file selected", fg="gray")
@@ -33,11 +32,11 @@ class ReportCardApp:
         tk.Radiobutton(frame, text="Export as DOCX (Template)",
                        variable=self.export_format, value="DOCX").pack(anchor="w")
 
-        tk.Radiobutton(frame, text="Export as PDF (No Template / Design)",
-                       variable=self.export_format, value="PDF").pack(anchor="w")
+        #tk.Radiobutton(frame, text="Export as PDF (No Template / Design)",
+                       #variable=self.export_format, value="PDF").pack(anchor="w")
 
-        tk.Radiobutton(frame, text="Export as PDF (From DOCX – Requires Microsoft Word)",
-                       variable=self.export_format, value="DOCX2PDF").pack(anchor="w")
+        #tk.Radiobutton(frame, text="Export as PDF (From DOCX – Requires Microsoft Word)",
+         #              variable=self.export_format, value="DOCX2PDF").pack(anchor="w")
 
         tk.Button(root, text="Generate Report Cards",
                   bg="#4CAF50", fg="white", width=25,
@@ -77,7 +76,7 @@ class ReportCardApp:
             "Waking Einstein 🧠",
             "Borrowing Tesla power ⚡",
             "Convincing Microsoft Word 😤",
-            "Almost done 😌"
+            "Almost done 😌",
         ]
 
     def update_progress(self, i):

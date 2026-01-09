@@ -3,7 +3,7 @@
 
   <Package
     Name="NEIEA Report Generator"
-    Manufacturer="Mohammed Omer for NEIEA"
+    Manufacturer="Mohammed Omer"
     Version="1.0.0"
     UpgradeCode="cd754440-97a4-4249-b6b3-2b92b1783564"
     InstallerVersion="500"

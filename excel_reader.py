@@ -40,7 +40,6 @@ def read_students_excel(excel_path):
 
     for _, row in df.iterrows():
         student = {
-            # ===== BASIC DETAILS =====
             "student_name": str(row.get("Student's Name", "")).strip(),
             "father_name": str(row.get("Father's Name", "")).strip(),
             "mother_name": str(row.get("Mother's Name", "")).strip(),
@@ -50,16 +49,13 @@ def read_students_excel(excel_path):
             "roll_no": clean_number(row.get("Roll No", "")),
             "address": str(row.get("Address", "")).strip(),
             "year": clean_number(row.get("Year", "")),
-
-            # ✅ FIXED CONTACT HEADER
+         #   "remark": str(row.get("Remark", "")).strip(),
             "contact_number": clean_number(row.get("Contact Number", "")),
 
-            # ===== MARKS =====
             "english": clean_mark(row.get("English", "")),
             "math": clean_mark(row.get("Math", "")),
             "science": clean_mark(row.get("Science", "")),
 
-            # ===== ATTENDANCE =====
             "total_classes": clean_number(row.get("Total Classes", 0)),
             "classes_attended": clean_number(row.get("Classes Attended", 0)),
         }

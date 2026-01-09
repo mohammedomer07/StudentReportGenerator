@@ -15,7 +15,7 @@ def resource_path(relative_path):
 TEMPLATE_PATH = resource_path("assets/Progress Report.docx")
 
 
-# ---------- SAFE HELPERS ----------
+
 
 def is_nan(value):
     return value is None or (isinstance(value, float) and math.isnan(value))
@@ -70,7 +70,6 @@ def safe_int(value, default=0):
         return default
 
 
-# ---------- PLACEHOLDER REPLACEMENT ----------
 
 def replace_placeholders_in_paragraph(paragraph, replacements):
     for run in paragraph.runs:
@@ -99,19 +98,16 @@ def replace_everywhere(doc, replacements):
                     replace_placeholders_in_paragraph(p, replacements)
 
 
-# ---------- MAIN GENERATOR ----------
 
 def generate_student_docx(student, report_title, output_folder="output/DOCX"):
     os.makedirs(output_folder, exist_ok=True)
 
     doc = Document(TEMPLATE_PATH)
 
-    # Normalize marks
     eng = normalize_mark(student.get("english"))
     math = normalize_mark(student.get("math"))
     sci = normalize_mark(student.get("science"))
 
-    # Totals
     total_marks = sum(
         int(m) for m in [eng, math, sci] if m not in ["", "AB"]
     )
@@ -137,6 +133,7 @@ def generate_student_docx(student, report_title, output_folder="output/DOCX"):
         "{{address}}": student.get("address", ""),
         "{{year}}": student.get("year", ""),
         "{{contact_number}}": student.get("contact_number", ""),
+     ## "{{remark}}": student.get("remark", ""),
         "{{report_title}}": report_title,
 
         "{{total_marks}}": total_marks,
@@ -148,7 +145,6 @@ def generate_student_docx(student, report_title, output_folder="output/DOCX"):
 
     replace_everywhere(doc, replacements)
 
-    # SUBJECT TABLE
     for table in doc.tables:
         for row in table.rows:
             subject = row.cells[0].text.strip().lower()
